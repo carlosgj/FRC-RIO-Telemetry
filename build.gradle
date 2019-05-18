@@ -1,64 +1,20 @@
+// Note 'apply false' for each plugin. This ensures they aren't applied to the root project (here), 
+// but it makes the plugins available for subprojects.
 plugins {
-    id "cpp"
-    //id "google-test-test-suite"
-    id "edu.wpi.first.GradleRIO" version "2019.4.1"
-    id "jaci.gradle.EmbeddedTools" version "2018.12.18"
+    // GradleRIO is used for code intended to go on robots, which is why it's only applied to the 'robot' project.
+    id "edu.wpi.first.GradleRIO" version "2019.4.1" apply false
+
+    // EmbeddedTools is the backing library for GradleRIO, and includes everything that's non-frc specific, which
+    // is why we use it for our coprocessor project.
+    id "jaci.gradle.EmbeddedTools" version "2018.12.18" apply false
 }
 
-// Define my targets (RoboRIO) and artifacts (deployable files)
-// This is added by GradleRIO's backing project EmbeddedTools.
-deploy {
-    targets {
-        targets {
-            target('rio-telem') {
-                directory = '/home/lvuser/telem'  
-                locations {
-                    ssh {
-                        address = "10.6.96.2"
-                        user = "admin"
-                        password = ""
-                    }
-                }
-            }
-        }
-    }
-    artifacts {
-        frcNativeArtifact('frcCpp') {
-            targets << "rio-telem"
-            component = 'canstreamer'
-            // Debug can be overridden by command line, for use with VSCode
-            debug = frc.getDebugOrDefault(false)
-        }
-    }
+// Setup the configuration for all sub-projects. This is a shortcut for manually applying the configuration
+// in each subproject individually.
+subprojects {
+    apply plugin: "cpp"
 }
 
-// Set this to true to include the src folder in the include directories passed
-// to the compiler. Some eclipse project imports depend on this behavior.
-// We recommend leaving this disabled if possible. Note for eclipse project
-// imports this is enabled by default. For new projects, its disabled
-def includeSrcInIncludeRoot = false
-
-model {
-    components {
-        canstreamer(NativeExecutableSpec) {
-            targetPlatform wpi.platforms.roborio
-
-            sources.cpp {
-                source {
-                    srcDir 'src/main/cpp'
-                    include '**/*.cpp', '**/*.cc'
-                }
-                exportedHeaders {
-                    srcDir 'src/main/include'
-                    if (includeSrcInIncludeRoot) {
-                        srcDir 'src/main/cpp'
-                    }
-                }
-            }
-
-            // Defining my dependencies. In this case, WPILib (+ friends), and vendor libraries.
-            useLibrary(it, "wpilib")
-            wpi.deps.vendor.cpp(it)
-        }
-    }
-}
+//task wrapper(type: Wrapper) {
+//    gradleVersion = '5.0'
+//}
