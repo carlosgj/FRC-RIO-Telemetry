@@ -2,6 +2,8 @@
 
 #include <stdint.h>
 //#include "CCSDS/CCSDS.h"
+#include "../../../../ports.h"
+#include "../../../../CCSDS/src/main/include/CCSDS.h"
 #include <stdlib.h> 
 #include <sys/types.h> 
 #include <sys/socket.h> 
@@ -12,11 +14,7 @@
 #include <thread>
 #include <iostream>
 
-#define INTPORT 8000
-#define EXTPORT 5800
-#define DESTADDRESS "10.6.96.5"
-#define DESTPORT 8000
-#define RECV_BUFFER_LEN 65535 //Does it really need to be this big?
+#define RECV_BUFFER_LEN 200 //Does it really need to be this big?
 int int_sock;
 int ext_sock;
 struct sockaddr_in intaddr, extaddr, destaddr;

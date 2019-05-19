@@ -20,6 +20,7 @@ int makeUDPsock(in_addr_t address, uint16_t port){
     addr.sin_addr.s_addr = address; 
     addr.sin_port = htons(port);
     if ( bind(sockfd, (const struct sockaddr *)&addr, sizeof(addr)) < 0 ){  
+        printf("Bind failed");
         exit(EXIT_FAILURE); 
     }
     return sockfd;
@@ -45,21 +46,28 @@ void run_inbound(){
         //Receive inbound commands
         n = recvfrom(ext_sock, buffer, RECV_BUFFER_LEN, MSG_WAITALL, ( struct sockaddr *) &recaddr, &addrlen);
         if(n > 0){
-            //Handle inbound packet
+            
         }
     }
 }
 
 void run_outbound(){
     uint16_t n;
-    socklen_t addrlen;
-    in_addr_t recaddr;
-    char buffer[RECV_BUFFER_LEN]; 
+    char tbuffer[RECV_BUFFER_LEN]; 
+    std::cout << "Running outbound router\n";
     while(true){
         //Receive outbound telemetry
-        n = recvfrom(int_sock, buffer, RECV_BUFFER_LEN, MSG_WAITALL, ( struct sockaddr *) &recaddr, &addrlen);
+        memset(tbuffer, 0, RECV_BUFFER_LEN);
+        n = recv(int_sock, tbuffer, RECV_BUFFER_LEN, MSG_WAITALL);
         if(n > 0){
-            sendto(ext_sock, buffer, n, MSG_CONFIRM, (const struct sockaddr *) &destaddr, sizeof(destaddr));
+            //printf("%d: ", n);
+            //unsigned int j;
+            //for(j=0; j<n; j++){
+              //  printf("%02X", tbuffer[j]);
+            //}
+            //printf("\n");
+            sendto(ext_sock, tbuffer, n, MSG_CONFIRM, (const struct sockaddr *) &destaddr, sizeof(destaddr));
+            
         }
     }
 }
