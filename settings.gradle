@@ -1,1 +1,1 @@
-include "CANStreamer", "SPP-Router"
+include "CANStreamer", "SPP-Router", "Talon-Monitor", "Shim"

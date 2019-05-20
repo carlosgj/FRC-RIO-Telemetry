@@ -1,0 +1,75 @@
+plugins {
+    id "cpp"
+    //id "google-test-test-suite"
+    id "edu.wpi.first.GradleRIO"
+    id "jaci.gradle.EmbeddedTools"
+}
+
+// Define my targets (RoboRIO) and artifacts (deployable files)
+// This is added by GradleRIO's backing project EmbeddedTools.
+deploy {
+    targets {
+        targets {
+            target('rio-telem') {
+                directory = '/home/lvuser/telem'  
+                locations {
+                    ssh {
+                        address = "10.6.96.2"
+                        user = "admin"
+                        password = ""
+                    }
+                }
+            }
+        }
+    }
+    artifacts {
+        frcNativeArtifact('frcCpp') {
+            targets << "rio-telem"
+            component = 'shim'
+            robotCommand = false;
+            predeploy.clear()
+            postdeploy.clear()
+            // Debug can be overridden by command line, for use with VSCode
+            //debug = frc.getDebugOrDefault(false)
+        }
+    }
+}
+
+// Set this to true to include the src folder in the include directories passed
+// to the compiler. Some eclipse project imports depend on this behavior.
+// We recommend leaving this disabled if possible. Note for eclipse project
+// imports this is enabled by default. For new projects, its disabled
+def includeSrcInIncludeRoot = true
+
+model {
+    components {
+        shim(NativeLibrarySpec) {
+            targetPlatform wpi.platforms.roborio
+
+            sources.cpp {
+                source {
+                    srcDir 'src/main/cpp'
+                    include '**/*.cpp', '**/*.cc'
+                }
+                exportedHeaders {
+                    srcDir 'src/main/include'
+                    if (includeSrcInIncludeRoot) {
+                        srcDir 'src/main/cpp'
+                    }
+                }
+            }
+
+            // Defining my dependencies. In this case, WPILib (+ friends), and vendor libraries.
+            //useLibrary(it, "wpilib")
+            //wpi.deps.vendor.cpp(it)
+
+            binaries.all {
+                // Don't build static libraries
+                //if (it.targetPlatform.name.contains(wpi.platforms.roborio)) {
+                    linker.args << '-shared'
+                    //compiler.args << '-shared'
+                //} 
+            }
+        }
+    }
+}
